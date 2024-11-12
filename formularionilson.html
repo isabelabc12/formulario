@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!--
+      HENRYQUE CARVALHO           N°:14      3°A
+      ISABELA BATISTA             N°:17      3°A
+      DANIEL CARVALHO             N°:5       3°A
+      --!> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Validação</title>
+    <script>
+        // Função auxiliar para remover caracteres não numéricos do CPF
+        function limparCPF(cpf) {
+            return cpf.replace(/\D/g, ''); // Remove tudo que não for dígito
+        }
+
+        // Função para validar CPF
+        function ehCPFValido(cpf) {
+            cpf = limparCPF(cpf);
+            if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+            return verificarDigitosCPF(cpf);
+        }
+
+        // Verificação dos dígitos do CPF
+        function verificarDigitosCPF(cpf) {
+            const digito1 = calcularDigito(cpf, 9, 10);
+            const digito2 = calcularDigito(cpf, 10, 11);
+
+            return (digito1 === parseInt(cpf.charAt(9)) && digito2 === parseInt(cpf.charAt(10)));
+        }
+
+        // Cálculo dos dígitos verificadores do CPF
+        function calcularDigito(cpf, tamanho, pesoInicial) {
+            let soma = 0;
+            for (let i = 0; i < tamanho; i++) {
+                soma += parseInt(cpf.charAt(i)) * (pesoInicial - i);
+            }
+            const resto = (soma * 10) % 11;
+            return (resto === 10 || resto === 11) ? 0 : resto;
+        }
+
+        // Validação de senha
+        function senhasSaoIguais() {
+            const senha = document.getElementById('senha').value;
+            const confirmacaoSenha = document.getElementById('confirmacao_senha').value;
+            return senha === confirmacaoSenha;
+        }
+
+        // Função para atualizar a idade com base na data de nascimento
+        function atualizarIdade() {
+            const nascimento = document.getElementById('nascimento').value;
+            if (!nascimento) return;
+
+            const idade = calcularIdade(new Date(nascimento));
+            if (idade === null) {
+                alert("Data de nascimento inválida.");
+                limparCamposData();
+                return;
+            }
+            document.getElementById('idade').value = idade;
+        }
+
+        // Cálculo da idade
+        function calcularIdade(dataNascimento) {
+            const hoje = new Date();
+            if (dataNascimento > hoje || isNaN(dataNascimento)) return null;
+
+            let idade = hoje.getFullYear() - dataNascimento.getFullYear();
+            const mesAtual = hoje.getMonth();
+            const diaAtual = hoje.getDate();
+
+            const mesNascimento = dataNascimento.getMonth();
+            const diaNascimento = dataNascimento.getDate();
+
+            if (mesAtual < mesNascimento || (mesAtual === mesNascimento && diaAtual <= diaNascimento)) {
+                idade--;
+            }
+
+            return idade;
+        }
+
+        // Função para limpar campos de data quando inválidos
+        function limparCamposData() {
+            document.getElementById('nascimento').value = '';
+            document.getElementById('idade').value = '';
+        }
+
+        // Validação completa do formulário
+        function validarFormulario() {
+            const cpf = document.getElementById('cpf').value;
+            if (!ehCPFValido(cpf)) {
+                alert("CPF inválido.");
+                return false;
+            }
+
+            if (!senhasSaoIguais()) {
+                alert("As senhas não coincidem.");
+                return false;
+            }
+
+            const nascimento = document.getElementById('nascimento').value;
+            if (!calcularIdade(new Date(nascimento))) {
+                alert("Data de nascimento inválida.");
+                return false;
+            }
+
+            return true;
+        }
+
+        // Definir a data máxima no campo de data de nascimento
+        function definirDataMaxima() {
+            const hoje = new Date().toISOString().split("T")[0];
+            document.getElementById('nascimento').max = hoje;
+        }
+
+        window.onload = definirDataMaxima;
+    </script>
+</head>
+<body>
+
+    <h2>Formulário de Cadastro</h2>
+    <form onsubmit="return validarFormulario()">
+        <label for="nome">Nome Completo:</label><br>
+        <input type="text" id="nome" name="nome" required><br><br>
+
+        <label for="nascimento">Data de Nascimento:</label><br>
+        <input type="date" id="nascimento" name="nascimento" required onchange="atualizarIdade()"><br><br>
+
+        <label for="idade">Idade:</label><br>
+        <input type="number" id="idade" name="idade" disabled><br><br>
+
+        <label for="cpf">CPF:</label><br>
+        <input type="text" id="cpf" name="cpf" maxlength="14" required oninput="this.value = this.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')"><br><br>
+
+        <label for="usuario">Usuário:</label><br>
+        <input type="text" id="usuario" name="usuario" required><br><br>
+
+        <label for="senha">Senha:</label><br>
+        <input type="password" id="senha" name="senha" required><br><br>
+
+        <label for="confirmacao_senha">Confirmação de Senha:</label><br>
+        <input type="password" id="confirmacao_senha" name="confirmacao_senha" required><br><br>
+
+        <input type="submit" value="Enviar">
+    </form>
+
+</body>
+</html>
